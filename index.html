@@ -3,115 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Presença - Treinamento de Segurança</title>
+    <title>Formulário de Lista de Presença</title>
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad/dist/signature_pad.umd.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
             padding: 20px;
             background-color: #f4f4f4;
-            border-radius: 10px;
         }
         h1 {
             text-align: center;
-            color: #333;
         }
-        label {
-            display: block;
-            margin-top: 10px;
-            font-weight: bold;
-        }
-        input, textarea {
-            width: 100%;
-            padding: 10px;
-            margin-top: 5px;
+        .signature-pad {
             border: 1px solid #ccc;
-            border-radius: 5px;
+            width: 100%;
+            height: 200px;
+            margin: 20px 0;
         }
         button {
-            margin-top: 20px;
+            display: block;
+            width: 100%;
             padding: 10px;
-            background-color: #28a745;
+            background-color: #4CAF50;
             color: white;
             border: none;
-            border-radius: 5px;
             cursor: pointer;
+            font-size: 16px;
         }
         button:hover {
-            background-color: #218838;
+            background-color: #45a049;
         }
     </style>
 </head>
 <body>
-    <h1>Lista de Presença - Treinamento de Segurança</h1>
-    <form action="https://script.google.com/macros/s/AKfycbypW3Afk2tOkKLFdWe4zt21eowmsU4OFpJ-8jH1oUuvoDXtTjizUWczNtrj9bu-a3W7/exec" method="post" id="form">
-        <label for="titulo">Título do Treinamento:</label>
-        <input type="text" id="titulo" name="titulo" value="Treinamento de Segurança" readonly>
-
-        <label for="conteudo">Conteúdo Programático:</label>
-        <textarea id="conteudo" name="conteudo" rows="4" readonly>Conteúdo do treinamento...</textarea>
-
-        <label for="carga_horaria">Carga Horária:</label>
-        <input type="text" id="carga_horaria" name="carga_horaria" value="1 hora" readonly>
-
-        <label for="instrutor">Nome do Instrutor:</label>
-        <input type="text" id="instrutor" name="instrutor" required>
-
-        <label for="colaborador">Nome do Colaborador:</label>
-        <input type="text" id="colaborador" name="colaborador" required>
-
-        <label for="rg">RG:</label>
-        <input type="text" id="rg" name="rg" required>
-
-        <label for="cpf">CPF:</label>
-        <input type="text" id="cpf" name="cpf" required>
-
-        <label for="email">E-mail:</label>
-        <input type="email" id="email" name="email" required>
-
-        <label for="gestor">Gestor:</label>
-        <input type="text" id="gestor" name="gestor" required>
-
-        <label for="setor">Setor:</label>
-        <input type="text" id="setor" name="setor" required>
-
-        <label for="assinatura">Assinatura Digital:</label>
-        <canvas id="assinatura" width="400" height="200" style="border:1px solid #ccc;"></canvas>
-        <input type="hidden" id="assinaturaData" name="assinaturaData">
-
-        <button type="button" id="limpar">Limpar Assinatura</button>
+    <h1>Formulário de Presença</h1>
+    <form id="attendanceForm">
+        <input type="text" name="titulo" placeholder="Título do Treinamento de Segurança" value="Treinamento de Segurança" required>
+        <input type="text" name="conteudo_programatico" placeholder="Conteúdo Programático" value="Conteúdo do curso" required>
+        <input type="text" name="carga_horaria" placeholder="Carga Horária" value="1 hora" required>
+        <input type="text" name="nome_instrutor" placeholder="Nome do Instrutor" required>
+        <input type="text" name="nome_colaborador" placeholder="Nome do Colaborador" required>
+        <input type="text" name="rg" placeholder="RG" required>
+        <input type="text" name="cpf" placeholder="CPF" required>
+        <input type="email" name="email" placeholder="Email" required>
+        <input type="text" name="gestor" placeholder="Gestor" required>
+        <input type="text" name="setor" placeholder="Setor" required>
+        
+        <h3>Assinatura:</h3>
+        <canvas id="signature-pad" class="signature-pad"></canvas>
+        <button type="button" id="clear">Limpar Assinatura</button>
+        
+        <input type="hidden" name="signature" id="signature">
+        
         <button type="submit">Enviar</button>
     </form>
-
+    
     <script>
-        const canvas = document.getElementById("assinatura");
-        const context = canvas.getContext("2d");
-        let drawing = false;
+        const canvas = document.getElementById('signature-pad');
+        const signaturePad = new SignaturePad(canvas);
 
-        canvas.addEventListener("mousedown", () => {
-            drawing = true;
-            context.beginPath();
+        document.getElementById('clear').addEventListener('click', () => {
+            signaturePad.clear();
         });
 
-        canvas.addEventListener("mouseup", () => {
-            drawing = false;
-            context.closePath();
-            document.getElementById("assinaturaData").value = canvas.toDataURL();
-        });
-
-        canvas.addEventListener("mousemove", (event) => {
-            if (!drawing) return;
-            context.lineWidth = 2;
-            context.lineCap = "round";
-            context.strokeStyle = "#000";
-
-            context.lineTo(event.clientX - canvas.offsetLeft, event.clientY - canvas.offsetTop);
-            context.stroke();
-        });
-
-        document.getElementById("limpar").addEventListener("click", () => {
-            context.clearRect(0, 0, canvas.width, canvas.height);
-            document.getElementById("assinaturaData").value = "";
+        document.getElementById('attendanceForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            if (!signaturePad.isEmpty()) {
+                const dataURL = signaturePad.toDataURL();
+                document.getElementById('signature').value = dataURL;
+                this.submit();
+            } else {
+                alert("Por favor, adicione sua assinatura.");
+            }
         });
     </script>
 </body>
