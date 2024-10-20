@@ -62,7 +62,7 @@
 
         document.getElementById('form').onsubmit = function() {
             if (!signaturePad.isEmpty()) {
-                var dataURL = signaturePad.toDataURL();
+                var dataURL = signaturePad.toDataURL('image/png');
                 document.getElementById('signature').value = dataURL;
             } else {
                 alert("Por favor, adicione sua assinatura.");
