@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Presença - Treinamento de Segurança</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            text-align: center;
+            color: #4CAF50;
+            margin-bottom: 10px;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 15px;
+        }
+        input[type="text"], input[type="email"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        canvas {
+            border: 1px solid #ccc;
+            display: block;
+            margin: 10px auto;
+            background-color: #fafafa;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px;
+            width: 100%;
+            margin-top: 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .program-content {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #777;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Lista de Presença - Treinamento de Segurança</h1>
+        <h2>Data: 19/10/2024</h2>
+        <form id="attendanceForm">
+            <label for="name">Nome Completo:</label>
+            <input type="text" id="name" required>
+            <label for="email">E-mail:</label>
+            <input type="email" id="email" required>
+            <label for="instructor">Nome do Instrutor:</label>
+            <input type="text" id="instructor" required>
+            <h2>Conteúdo Programático</h2>
+            <div class="program-content">
+                <ul>
+                    <li>Introdução à Segurança do Trabalho</li>
+                    <li>Identificação de Riscos</li>
+                    <li>Equipamentos de Proteção Individual (EPIs)</li>
+                    <li>Práticas Seguras de Trabalho</li>
+                    <li>Procedimentos de Emergência</li>
+                </ul>
+            </div>
+            <h2>Assinatura:</h2>
+            <canvas id="signatureCanvas" width="400" height="200"></canvas>
+            <button type="button" onclick="clearCanvas()">Limpar Assinatura</button>
+            <button type="submit">Salvar Presença</button>
+        </form>
+        <footer>
+            <p>Empresa XYZ - Segurança do Trabalho</p>
+        </footer>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('signatureCanvas');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+
+        canvas.addEventListener('mousedown', (e) => {
+            isDrawing = true;
+            ctx.beginPath();
+            ctx.moveTo(e.offsetX, e.offsetY);
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (isDrawing) {
+                ctx.lineTo(e.offsetX, e.offsetY);
+                ctx.stroke();
+            }
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            isDrawing = false;
+            ctx.closePath();
+        });
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        document.getElementById('attendanceForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const instructor = document.getElementById('instructor').value;
+            const signatureDataURL = canvas.toDataURL('image/png');
+
+            // Criar PDF
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const pageWidth = doc.internal.pageSize.getWidth();
+
+            // Formatação do PDF
+            doc.setFontSize(22);
+            doc.text('Lista de Presença - Treinamento de Segurança', pageWidth / 2, 20, { align: 'center' });
+            doc.setFontSize(12);
+            doc.text(`Data: 19/10/2024`, 20, 30);
+            doc.text(`Nome: ${name}`, 20, 40);
+            doc.text(`E-mail: ${email}`, 20, 50);
+            doc.text(`Instrutor: ${instructor}`, 20, 60);
+            doc.text('Conteúdo Programático:', 20, 70);
+            const content = [
+                'Introdução à Segurança do Trabalho',
+                'Identificação de Riscos',
+                'Equipamentos de Proteção Individual (EPIs)',
+                'Práticas Seguras de Trabalho',
+                'Procedimentos de Emergência'
+            ];
+            content.forEach((line, index) => {
+                doc.text(line, 20, 80 + (index * 10));
+            });
+            doc.text('Assinatura:', 20, 120);
+            doc.addImage(signatureDataURL, 'PNG', 20, 130, 160, 60);
+            doc.setFontSize(10);
+            doc.text('Empresa XYZ - Segurança do Trabalho', pageWidth / 2, 200, { align: 'center' });
+
+            doc.save(`${name}_presenca.pdf`);
+
+            // Limpar o formulário
+            clearCanvas();
+            document.getElementById('attendanceForm').reset();
+        });
+    </script>
+</body>
+</html>
